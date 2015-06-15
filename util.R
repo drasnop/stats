@@ -340,6 +340,58 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
   return(list(brief=results_summary, plot=plot, data=subset_data, stacked_data=stacked_data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
 }
 
+
+util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
+  saved_scipen = getOption("scipen")
+  saved_digits = getOption("digits")
+  options(scipen=100,digits=4)
+
+  results_summary = list()
+
+  # TODO: get only a subset of the data, based on the columns passed in argument
+
+  util.printHeader("Summary Statistics")
+
+  # summary_results <- ezStats(data=stacked_data, dv=.(dvName), wid=.(participantName), between=.(ivName))
+  # sad work-around since ez package does strange eval of parameters
+  summary_results <- eval(parse(text=paste0("ezStats(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivName, ")")))
+  print(summary_results)
+  results_summary$descriptive <- summary_results
+
+  # between-subjects ANOVA
+  util.printHeader("ANOVA Results")
+  #anova_results <- ezANOVA(data=data, dv=.(dvName), wid=.(participantName), between=.(ivName))
+  # sad work-around since ez package does strange eval of parameters
+  anova_results <- eval(parse(text=paste0("ezANOVA(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivName, ")")))
+
+
+  # pretty print the results
+  results_summary$anova <- util.anovaToString(anova_results)
+  writeLines(results_summary$anova)
+  writeLines("\n")
+  print(anova_results)
+
+  # boxplot the data
+  boxplot(shortDuration~interfaceType,data=data)
+
+  if (anova_results$ANOVA$p > 0.05) {
+    writeLines("==> ANOVA not significant.")
+    posthoc_results <- NULL
+  } else {
+    util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
+    posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
+    print(posthoc_results)
+    results_summary$posthoc <- posthoc_results$p.value
+  }
+
+  # revert options for scientific notation
+  options(scipen=saved_scipen,digits=saved_digits)
+  rm(saved_scipen,saved_digits)
+
+  return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
+}
+
+
 util.posthocAnalysis <- function (data, dvName="value", ivName="condition", numTrials=NULL, participantName="participant", numDecimals=1, paired=F) {
   results <- list()
   aggr_data <- aggregate(as.formula(paste0(dvName, "~", participantName, "*", ivName)), data=data, FUN=sum)
