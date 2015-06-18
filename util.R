@@ -326,7 +326,10 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
   if (anova_results$ANOVA$p > 0.05) {
     writeLines("==> ANOVA not significant.")
     posthoc_results <- NULL
-  } else {
+  } else if(length(unique(stacked_data[[ivName]])) <= 2) {
+    # no post-hoc test if independent variable has only two levels
+    posthoc_results <- NULL
+  } else{
     util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
     posthoc_results <- pairwise.t.test(stacked_data[[dvName]], stacked_data[[ivName]], p.adjust.method="bonferroni", paired=T)
     print(posthoc_results)
@@ -377,7 +380,10 @@ util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Pa
   if (anova_results$ANOVA$p > 0.05) {
     writeLines("==> ANOVA not significant.")
     posthoc_results <- NULL
-  } else {
+  } else if(length(unique(data[[ivName]])) <= 2) {
+    # no post-hoc test if independent variable has only two levels
+    posthoc_results <- NULL
+  } else{
     util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
     posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
     print(posthoc_results)
