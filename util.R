@@ -286,6 +286,7 @@ util.pairwise.wilcoxonSignedRankTest <- function (x, g, p.adjust.method = p.adju
 }
 
 
+# run a repeated-measures ANOVA + required tests, exclusively within-subjects
 util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
@@ -344,6 +345,7 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
 }
 
 
+# run a one-way ANOVA + required tests, exclusively between-subjects
 util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
@@ -395,6 +397,67 @@ util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Pa
   rm(saved_scipen,saved_digits)
 
   return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
+}
+
+
+# run a two-way ANOVA + required tests, with one factor between-subjects and one factor within-subjects
+util.mixedDesignAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivbName = "between", ivwName = "within", participantName = "participant") {
+  saved_scipen = getOption("scipen")
+  saved_digits = getOption("digits")
+  options(scipen=100,digits=4)
+
+  results_summary = list()
+
+  # TODO: get only a subset of the data, based on the columns passed in argument
+
+  util.printHeader("Summary Statistics")
+
+  # convert time to a factor...
+  data[[ivwName]]=factor(data[[ivwName]])
+
+  # summary_results <- ezStats(data=stacked_data, dv=.(dvName), wid=.(participantName), between=.(ivName))
+  # sad work-around since ez package does strange eval of parameters
+  summary_results <- eval(parse(text=paste0("ezStats(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivbName, ", within=", ivwName,")")))
+  print(summary_results)
+  results_summary$descriptive <- summary_results
+
+  # mixed-design ANOVA
+  util.printHeader("ANOVA Results")
+  #anova_results <- ezANOVA(data=data, dv=.(dvName), wid=.(participantName), between=.(ivName))
+  # sad work-around since ez package does strange eval of parameters
+  anova_results <- eval(parse(text=paste0("ezANOVA(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivbName, ", within=", ivwName,")")))
+  
+  # mixed model, but I don't understand how it works...
+  # anova_results <- eval(parse(text=paste0("ezMixed(data=data, dv=.(", dvName, "), fixed=.(", ivbName, "), random=.(", ivwName, "))")))
+
+
+  # pretty print the results
+  results_summary$anova <- util.anovaToString(anova_results)
+  writeLines(results_summary$anova)
+  writeLines("\n")
+  print(anova_results)
+
+  # # boxplot the data
+  # boxplot(shortDuration~interfaceType,data=data)
+
+  # if (anova_results$ANOVA$p > 0.05) {
+  #   writeLines("==> ANOVA not significant.")
+  #   posthoc_results <- NULL
+  # } else if(length(unique(data[[ivName]])) <= 2) {
+  #   # no post-hoc test if independent variable has only two levels
+  #   posthoc_results <- NULL
+  # } else{
+  #   util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
+  #   posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
+  #   print(posthoc_results)
+  #   results_summary$posthoc <- posthoc_results$p.value
+  # }
+
+  # # revert options for scientific notation
+  # options(scipen=saved_scipen,digits=saved_digits)
+  # rm(saved_scipen,saved_digits)
+
+  # return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
 }
 
 
