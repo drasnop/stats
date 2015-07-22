@@ -346,14 +346,14 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
 
 
 # run a one-way ANOVA + required tests, exclusively between-subjects
-util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
+util.betweenSubjectsAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
   options(scipen=100,digits=4)
 
   results_summary = list()
 
-  # TODO: get only a subset of the data, based on the columns passed in argument
+  # TODO: get only a subset of the data, based on the columns passed in argument. Nope, it's useless
 
   util.printHeader("Summary Statistics")
 
@@ -377,7 +377,7 @@ util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Pa
   print(anova_results)
 
   # boxplot the data
-  boxplot(shortDuration~interfaceType,data=data)
+  boxplot(medianShortDuration~interfaceType,data=data)
 
   if (anova_results$ANOVA$p > 0.05) {
     writeLines("==> ANOVA not significant.")
@@ -401,14 +401,14 @@ util.betweenSubjectsAnalysis <- function (data, columns, participantColumn = "Pa
 
 
 # run a two-way ANOVA + required tests, with one factor between-subjects and one factor within-subjects
-util.mixedDesignAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivbName = "between", ivwName = "within", participantName = "participant") {
+util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivbName = "between", ivwName = "within", participantName = "participant") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
   options(scipen=100,digits=4)
 
   results_summary = list()
 
-  # TODO: get only a subset of the data, based on the columns passed in argument
+  # TODO: get only a subset of the data, based on the columns passed in argument. Nope, it's useless.
 
   util.printHeader("Summary Statistics")
 
@@ -438,7 +438,7 @@ util.mixedDesignAnalysis <- function (data, columns, participantColumn = "Partic
   print(anova_results)
 
   # # boxplot the data
-  # boxplot(shortDuration~interfaceType,data=data)
+  boxplot(logShortDuration~interfaceType,data=data)
 
   # if (anova_results$ANOVA$p > 0.05) {
   #   writeLines("==> ANOVA not significant.")
