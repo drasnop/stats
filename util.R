@@ -224,6 +224,88 @@ util.withinSubjectsNonParametricAnalysis <- function (data, columns, participant
 }
 
 
+util.betweenSubjectsNonParametricAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
+  # do not use scientific notation
+  saved_scipen = getOption("scipen")
+  saved_digits = getOption("digits")
+  options(scipen=100,digits=4)
+
+  results_summary = list()
+
+  # prepare the data
+  # prepared_data <- util.withinSubjectsStack(data, columns, participantColumn, dvName, ivName, participantName, omitNA=TRUE)
+  # stacked_data <- prepared_data$stack
+  # subset_data <- prepared_data$data
+  subset_data <- data[c(participantColumn, columns)]
+  subset_data[[ivName]] <- data[[ivName]]
+
+  # ensure we have the participant factor set up properly in case we pruned some
+  # (otherwise get the error: not an unreplicated complete block design)
+  data[[participantName]] <- factor(data[[participantName]])
+
+  #dput(subset_data)
+  # summary stats
+  descriptive <- util.descriptiveStats(subset_data, TRUE)
+
+  results_summary$modes <- descriptive$modes
+  results_summary$medians <- apply(subset_data[2:length(subset_data)], 2, median)
+
+  # check if only two conditions, then only do wilcoxon test
+  if (length(levels(data[[ivName]])) == 2) {
+    writeLines("\nOnly 2 levels, using Wilcoxon test.\n")
+    #x<-subset_data[[levels(data[[ivName]])[1]]]
+    #y<-subset_data[[levels(data[[ivName]])[2]]]
+
+    # not sure why I can get it to work with [[levels()]]... workaround:
+    x <- subset_data[subset_data[[ivName]] == levels(data[[ivName]])[1], ][[dvName]]
+    y <- subset_data[subset_data[[ivName]] == levels(data[[ivName]])[2], ][[dvName]]
+    
+
+    wilcoxon_results <- util.wilcoxonSignedRankTest(x,y)
+    print(wilcoxon_results)
+
+    # Pretty print
+    writeLines(paste0("W = ", wilcoxon_results$statistic[[1]], ", Z = ", round(wilcoxon_results$statistic[[2]], 4), ", ",
+                      util.pToString(wilcoxon_results$p.value), ", r = ", round(wilcoxon_results$parameter[[2]], 4)))
+
+    if (wilcoxon_results$p.value > 0.05) {
+      writeLines("==> Wilcoxon test not significant.")
+    } else {
+      writeLines("Wilcoxon test significant.")
+    }
+
+    return(list(brief=results_summary, data=subset_data, stacked_data=data, descriptive=descriptive, wilcoxon=wilcoxon_results))
+  }
+
+  writeLines("\nMore than 2 levels, using Friedman test.\n");
+
+  # non-parametric anova equivalent: Friedman test
+  util.printHeader("Friedman Rank Sum Test Results")
+  # sample formula: rating ~ condition | participant
+  friedman_results <- friedman.test(as.formula(paste(dvName, "~", ivName, "|", participantName)), data=data)
+
+  # pretty print
+  results_summary$friedman = paste0("chi^2(", as.numeric(friedman_results$parameter), ") = ", round(as.numeric(friedman_results$statistic), 3), ", ", util.pToString(friedman_results$p.value))
+  writeLines(results_summary$friedman)
+  print(friedman_results)
+
+  if (friedman_results$p.value > 0.05) {
+    writeLines("==> Friedman test not significant.")
+    posthoc_results <- NULL
+  } else {
+    # post-hoc tests
+    util.printHeader("Post-hoc Test Results (Pairwise Wilcoxon Test with Bonferroni correction)")
+    posthoc_results <- util.pairwise.wilcoxonSignedRankTest(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni")
+    print(posthoc_results)
+    writeLines("Effect sizes (r)")
+    print(posthoc_results$r)
+    results_summary$posthoc <- list(p.value=posthoc_results$p.value, r=posthoc_results$r)
+  }
+
+  return(list(brief=results_summary, data=subset_data, stacked_data=data, descriptive=descriptive, friedman=friedman_results, posthoc=posthoc_results))
+}
+
+
 # Inspired by http://yatani.jp/HCIstats/WilcoxonSigned
 # Can be used on Likert type responses, within-subjects.
 # Provides effect size (r) and the W and Z statistics.
@@ -438,7 +520,7 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
   print(anova_results)
 
   # # boxplot the data
-  boxplot(logShortDuration~interfaceType,data=data)
+  boxplot(data[[dvName]]~data[[ivbName]],data=data)
 
   # if (anova_results$ANOVA$p > 0.05) {
   #   writeLines("==> ANOVA not significant.")
