@@ -520,26 +520,45 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
   print(anova_results)
 
   # # boxplot the data
-  boxplot(data[[dvName]]~data[[ivbName]],data=data)
+  # boxplot(data[[dvName]]~data[[ivbName]],data=data)
+  
+  posthoc_results = list()
 
-  # if (anova_results$ANOVA$p > 0.05) {
-  #   writeLines("==> ANOVA not significant.")
-  #   posthoc_results <- NULL
-  # } else if(length(unique(data[[ivName]])) <= 2) {
-  #   # no post-hoc test if independent variable has only two levels
-  #   posthoc_results <- NULL
-  # } else{
-  #   util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
-  #   posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
-  #   print(posthoc_results)
-  #   results_summary$posthoc <- posthoc_results$p.value
-  # }
+  # post-hoc between factor: independent samples t-tests
+
+  if (anova_results$ANOVA$p[1] > 0.05) {
+    writeLines("==> ANOVA on between factor not significant.")
+    posthoc_results$between <- NULL
+  } else if(length(unique(data[[ivbName]])) <= 2) {
+    # no post-hoc test if independent variable has only two levels
+    posthoc_results$between <- NULL
+  } else{
+    util.printHeader(paste("Post-hoc Tests on", ivbName,"(between-subjects)"))
+    posthoc_results$between <- pairwise.t.test(data[[dvName]], data[[ivbName]], p.adjust.method="bonferroni", pool.sd=F)
+    print(posthoc_results$between)
+    results_summary$posthoc$between <- posthoc_results$between$p.value
+  }
+
+  # post-hoc within factor: paired t-tests
+
+  if (anova_results$ANOVA$p[2] > 0.05) {
+    writeLines("==> ANOVA on within factor not significant.")
+    posthoc_results$within <- NULL
+  } else if(length(unique(data[[ivwName]])) <= 2) {
+    # no post-hoc test if independent variable has only two levels
+    posthoc_results$within <- NULL
+  } else{
+    util.printHeader(paste("Post-hoc Tests on", ivwName,"(within-subjects)"))
+    posthoc_results$within <- pairwise.t.test(data[[dvName]], data[[ivwName]], p.adjust.method="bonferroni", paired=T)
+    print(posthoc_results$within)
+    results_summary$posthoc$within <- posthoc_results$within$p.value
+  }
 
   # # revert options for scientific notation
-  # options(scipen=saved_scipen,digits=saved_digits)
-  # rm(saved_scipen,saved_digits)
+  options(scipen=saved_scipen,digits=saved_digits)
+  rm(saved_scipen,saved_digits)
 
-  # return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
+  return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
 }
 
 
