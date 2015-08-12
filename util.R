@@ -13,7 +13,7 @@ util.pToString <- function (p) {
   } else if (p < 0.05) {
     pStr <- "p < .05"
   } else {
-    pStr <- paste("p =", round(p, 3))
+    pStr <- paste("p =", round(p, 2))
   }
   return(pStr)
 }
@@ -55,6 +55,7 @@ util.pvalueSphericity <- function (anova_results) {
 
 util.anovaToString <- function (anova_results) {
   numDecimals <- 2
+  Effect <- anova_results$ANOVA$Effect
   DFn <- anova_results$ANOVA$DFn
   DFd <- anova_results$ANOVA$DFd
   F <- round(anova_results$ANOVA$F, numDecimals)
@@ -87,7 +88,20 @@ util.anovaToString <- function (anova_results) {
     p <- anova_results$ANOVA$p
   }
 
-  output <- paste0(output, "F(", round(DFn, numDecimals), ", ", round(DFd, numDecimals), ") = ", F, ", ", util.pToString(p), ", ges = ", ges)
+  output <- paste0(output, "F(", round(DFn, numDecimals), ", ", round(DFd, numDecimals), ") = ", F, ", ", util.pToString(p), ", ges = ", ges, " (", Effect,")")
+  return(output)
+}
+
+util.effectToString <- function(ANOVA){
+  numDecimals <- 2
+  Effect <- ANOVA$Effect
+  DFn <- ANOVA$DFn
+  DFd <- ANOVA$DFd
+  F <- round(ANOVA$F, numDecimals)
+  ges <- round(ANOVA$ges, numDecimals)
+  p <- ANOVA$p
+
+  output <- paste0("F(", round(DFn, numDecimals), ", ", round(DFd, numDecimals), ") = ", F, ", ", util.pToString(p), ", ges = ", ges, " (", Effect,")")
   return(output)
 }
 
@@ -514,7 +528,9 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
 
 
   # pretty print the results
-  results_summary$anova <- util.anovaToString(anova_results)
+  results_summary$anova <- vector()
+  for(i in 1:3)
+    results_summary$anova[i] <- util.effectToString(anova_results$ANOVA[i,])
   writeLines(results_summary$anova)
   writeLines("\n")
   print(anova_results)

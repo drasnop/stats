@@ -52,11 +52,8 @@ collapsed <- aggregate(as.formula(paste(measure,"~ id +",within,"+",between)), d
 
 # ANOVA
 util.printBigHeader(paste0("Running Parametric Analysis for ", measure, " on ", between, " (between-subjects) and ", within," (within-subject)"));
-condition_results <- util.mixedDesignAnalysis(collapsed, "id", measure, between, within, "id")
+results <- util.mixedDesignAnalysis(collapsed, "id", measure, between, within, "id")
 
-# post-hoc tests
-#print(pairwise.t.test(collapsed[[measure]], collapsed[[between]], p.adjust.method="bonferroni", pool.sd=F))
-#print(pairwise.t.test(collapsed[[measure]], collapsed[[within]], p.adjust.method="bonferroni", paired=T))
 
 # boxplot the data
 #outliers <- boxplot(as.formula(paste(measure,"~",within,"+",between)), collapsed)$out
@@ -65,6 +62,3 @@ outliers <- boxplot(as.formula(paste(measure,"~",between,"+",within)), collapsed
 # print outliers
 util.printHeader("Outliers")
 print(collapsed[collapsed[[measure]] %in% outliers, ])
-
-# UNUSED
-#data <- subset(data, (block == 1 & trialNumber >2) | (block == 2 & trialNumber >22))
