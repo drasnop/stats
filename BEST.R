@@ -1,15 +1,17 @@
 library(BEST)
 
 # parametric data taken from each participant in the experiment
-data <- read.csv("C:/Users/Antoine/programmation/web/stencil-analysis/2-24/trials-2-24.csv")
-#data <- read.csv("C:/Users/Antoine/programmation/web/stencil-analysis/1-20-pax/trials-1-20-pax.csv")
+filename <- function(batch){
+  return(paste0("C:/Users/Antoine/programmation/web/stencil-analysis/", batch, "/trials-", batch, ".csv"))
+}
+csv <- lapply(c("2-24", "3-24", "rect-15"), function(batch) read.csv(filename(batch)))
+data <- do.call(rbind, csv)
 
 measure <- "shortDuration"
 between <- "interfaceType"
-within <- "hookInTutorial"
 
 # remove practice trial
- data <- subset(data, block>0)
+data <- subset(data, block>0)
 
 # only first block
 # data <- subset(data, block == 1)
@@ -17,18 +19,18 @@ within <- "hookInTutorial"
 #data <- subset(data, (block == 1 & trialNumber >2) | (block == 2 & trialNumber >22))
 
 # remove problematic participants
-data <- subset(data, problems <= 1)
+data <- subset(data, problems <= 0)
 
 # keep only successful trials
-data <- subset(data, success == 1)
-# data <- subset(data, timeout == 0)
+#data <- subset(data, success == 1)
+data <- subset(data, timeout == 0)
 #data <- subset(data, ghost != 1)
 
 # log-transform
 data[[measure]] <- log(1+data[[measure]])
 
 writeLines("")
-writeLines(paste0("Running Parametric Analysis for ", measure, " on ", between, " (between-subjects) and ", within," (within-subject)"));
+writeLines(paste0("Running BEST for ", measure, " on ", between, " (between-subjects)"));
 writeLines("")
 
 # Run the model
