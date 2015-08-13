@@ -529,7 +529,7 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
 
   # pretty print the results
   results_summary$anova <- vector()
-  for(i in 1:3)
+  for(i in 1:nrow(anova_results$ANOVA))
     results_summary$anova[i] <- util.effectToString(anova_results$ANOVA[i,])
   writeLines(results_summary$anova)
   writeLines("\n")
