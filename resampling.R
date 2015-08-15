@@ -1,11 +1,12 @@
-n = 100;
+n = 1000;
 
 pvalues <- sapply(1:n, function(x) {
-  ids <- sample(subset(collapsed, interface == "0")$id, 12)
-  sampled <- subset(collapsed, id %in% ids | interface != "0")
-  print(paste(length(ids), length(subset(sampled, interface == "0"))))
-  
+  ids <- sample(as.character(subset(collapsed, interface == "0" & block == "1")$id), 8)
+  sampled <<- subset(collapsed, id %in% ids | interface != "0")
+
   suppressWarnings(results <- eval(parse(text=paste0("ezANOVA(data=sampled, dv=", measure, ", wid=id", ", between=", between, ", within=", within, ", type=3)"))))
+  print(paste(x, results$ANOVA$p[1]))
+  
   return(results$ANOVA$p[1]);
 })
 
@@ -13,7 +14,9 @@ pvalues <- sapply(1:n, function(x) {
 print(eval(parse(text=paste0("ezStats(data=sampled, dv=", measure, ", wid=id", ", between=", between, ", within=", within, ")"))))
 
 plot(density(pvalues))
-hist(pvalues, breaks=30)
+hist(pvalues, breaks=50)
+
+#print(paste(length(ids), length(subset(sampled, interface == "0" & block == "1")$id)))
 
 #temp <- split(collapsed, collapsed$interface)
 #control <- split(temp$`0`, temp$`0`$block)
