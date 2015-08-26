@@ -521,7 +521,7 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
   util.printHeader("ANOVA Results")
   #anova_results <- ezANOVA(data=data, dv=.(dvName), wid=.(participantName), between=.(ivName))
   # sad work-around since ez package does strange eval of parameters
-  anova_results <- eval(parse(text=paste0("ezANOVA(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivbName, ", within=", ivwName,")")))
+  anova_results <- eval(parse(text=paste0("ezANOVA(data=data, dv=", dvName, ", wid=", participantName, ", between=", ivbName, ", within=", ivwName, ", type=3)")))
   
   # mixed model, but I don't understand how it works...
   # anova_results <- eval(parse(text=paste0("ezMixed(data=data, dv=.(", dvName, "), fixed=.(", ivbName, "), random=.(", ivwName, "))")))
