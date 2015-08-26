@@ -21,10 +21,9 @@ data <- subset(data, block!=0)
 # remove problematic participants
 data <- subset(data, problems<=0)
 
-# outlier in Customization Mode (one very slow, one with 14 errors, two who participated in the pilot, one with 18 errors)
+# outlier in Customization Mode (one very slow, one with 14 errors, one with 18 errors)
 data <- subset(data, !(id %in% c("xqpi3r9n")))
 data <- subset(data, !(id %in% c("bicjgan9")))
-data <- subset(data, !(id %in% c("esfq3ee6", "l04et6xn")))
 data <- subset(data, !(id %in% c("yacy699g")))
 #data <- subset(data, !(id %in% c("0dksgr1h", "c7nb2rhh", "yj20fln6", "8cugv923" )))
 
