@@ -23,3 +23,13 @@ data <- subset(data, !(id %in% c("yacy699g")))
 
 # write the cleaned-up dataframe as a csv file
 write.csv(data, filename("mturk", file), row.names = FALSE, na = "")
+
+
+# plot kernel density plots of CAS
+par(mfrow=c(2,2))
+aggregate(numCorrectHookSelected ~ interface, data, function(x) plot(density(x), xlim=c(0,40), main="numCorrectAnchorSelected") )
+#aggregate(numCorrectHookSelected ~ interface, data, function(x) hist(x, breaks=c(0,10,20,30,40), main="numCorrectAnchorSelected"))
+par(mfrow=c(1,1))
+
+plot(density(subset(data, interface>0)$numCorrectHookSelected), main="numCorrectAnchorSelected")
+#hist(subset(data, interface>0)$numCorrectHookSelected, breaks=10, main="numCorrectAnchorSelected")
