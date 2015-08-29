@@ -35,6 +35,7 @@ data <- subset(data, !(id %in% c("yacy699g")))
 #data <- subset(data, !timeout)
 #data <- subset(data, targetGhost != 1)
 
+#data <- subset(data, targetTab != "Shortcuts")
 
 # log-transform
 if(is.numeric(data[[measure]]))

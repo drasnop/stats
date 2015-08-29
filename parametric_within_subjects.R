@@ -1,8 +1,74 @@
 source("util.R")
 
-# parametric data taken from each block of the experiment (within-subjects)
-all_data <- read.csv("sample_data.csv")
-columns <- c("conditionA","conditionB","conditionC")
+# parametric data taken from each participant in the experiment (within-subjects)
+filename <- function(batch){
+  return(paste0("C:/Users/Antoine/programmation/web/stencil-analysis/", batch, "/trials-", batch, ".csv"))
+}
+data <- read.csv(filename("lab"))
 
-util.printBigHeader("Running Parametric Within-subjects Analysis on A vs B vs C");
-condition_results <- util.withinSubjectsAnalysis(all_data, columns)
+measure <- "shortDuration"
+estimator <- median
+within <- "interface"
+
+# remove practice trial
+data <- subset(data, block!=0)
+
+# keep only successful trials
+#data <- subset(data, success)
+#data <- subset(data, !timeout)
+#data <- subset(data, targetGhost != 1)
+
+# log-transform
+if(is.numeric(data[[measure]]))
+  data[[measure]] <- log(1+data[[measure]])
+
+# make sure factors are treated as factors
+data[[within]] <- factor(data[[within]])
+
+if(is.numeric(data[[measure]])){
+  # plot histograms to check normality
+  par(mfrow=c(2,2))
+  aggregate(as.formula(paste(measure,"~",within)), data, function(x) hist(x, breaks=30, main=paste(measure,"~",within)) )
+  
+  # plot kernel density plots to check normality
+  aggregate(as.formula(paste(measure,"~",within)), data, function(x) plot(density(x), main=paste(measure,"~",within)) )
+  par(mfrow=c(1,1))
+}
+
+
+## aggregate
+collapsed <- aggregate(as.formula(paste(measure,"~ id +",within)), data, estimator)
+util.printBigHeader(paste0("Running Parametric Analysis for ", measure, " on ", within," (within-subject)"));
+
+
+## Assumptions
+
+# plot histograms to check normality
+hist(collapsed[[measure]], breaks=30)
+
+# plot kernel density plots to check normality
+plot(density(collapsed[[measure]]))
+
+
+## ANOVA
+results <- util.withinSubjectsAnalysis(collapsed, "id", measure, within, "id")
+
+# boxplot the data to look for outliers in each cell
+outliers <- boxplot(as.formula(paste(measure,"~",within)), collapsed)$out
+
+# print outliers
+if(length(outliers) > 0){
+  util.printHeader("Outliers")
+  print(collapsed[collapsed[[measure]] %in% outliers, ])
+}
+
+
+## Correct Anchor Selected
+CAS <- aggregate(correctHookHasBeenSelected~interface+id, data, sum)
+par(mfrow=c(2,2))
+aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) plot(density(x), xlim=c(0,10), ylim=c(0,.15), main="numCorrectAnchorSelected") )
+par(mfrow=c(1,1))
+
+plot(density(subset(CAS, interface!=0)$correctHookHasBeenSelected), main="numCorrectAnchorSelected")
+
+plot(CAS$correctHookHasBeenSelected, collapsed[[measure]])

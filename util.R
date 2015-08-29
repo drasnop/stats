@@ -383,7 +383,7 @@ util.pairwise.wilcoxonSignedRankTest <- function (x, g, p.adjust.method = p.adju
 
 
 # run a repeated-measures ANOVA + required tests, exclusively within-subjects
-util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
+util.withinSubjectsAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
   options(scipen=100,digits=4)
@@ -391,24 +391,20 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
   results_summary = list()
 
   # prepare the data
-  prepared_data <- util.withinSubjectsStack(data, columns, participantColumn, dvName, ivName, participantName)
-  stacked_data <- prepared_data$stack
-  subset_data <- prepared_data$data
-
 
   util.printHeader("Summary Statistics")
 
-  # summary_results <- ezStats(data=stacked_data, dv=.(dvName), wid=.(participantName), within=.(ivName))
+  # summary_results <- ezStats(data=data, dv=.(dvName), wid=.(participantName), within=.(ivName))
   # sad work-around since ez package does strange eval of parameters
-  summary_results <- eval(parse(text=paste0("ezStats(data=stacked_data, dv=", dvName, ", wid=", participantName, ", within=", ivName, ")")))
+  summary_results <- eval(parse(text=paste0("ezStats(data=data, dv=", dvName, ", wid=", participantName, ", within=", ivName, ")")))
   print(summary_results)
   results_summary$descriptive <- summary_results
 
   # within-subjects ANOVA
   util.printHeader("ANOVA Results")
-  #anova_results <- ezANOVA(data=stacked_data, dv=.(dvName), wid=.(participantName), within=.(ivName))
+  #anova_results <- ezANOVA(data=data, dv=.(dvName), wid=.(participantName), within=.(ivName))
   # sad work-around since ez package does strange eval of parameters
-  anova_results <- eval(parse(text=paste0("ezANOVA(data=stacked_data, dv=", dvName, ", wid=", participantName, ", within=", ivName, ")")))
+  anova_results <- eval(parse(text=paste0("ezANOVA(data=data, dv=", dvName, ", wid=", participantName, ", within=", ivName, ")")))
 
 
   # pretty print the results
@@ -418,17 +414,17 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
   print(anova_results)
 
   # boxplot the data
-  boxplot(value~condition,data=stacked_data)
+  #boxplot(value~condition,data=data)
 
   if (anova_results$ANOVA$p > 0.05) {
     writeLines("==> ANOVA not significant.")
     posthoc_results <- NULL
-  } else if(length(unique(stacked_data[[ivName]])) <= 2) {
+  } else if(length(unique(data[[ivName]])) <= 2) {
     # no post-hoc test if independent variable has only two levels
     posthoc_results <- NULL
   } else{
     util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
-    posthoc_results <- pairwise.t.test(stacked_data[[dvName]], stacked_data[[ivName]], p.adjust.method="bonferroni", paired=T)
+    posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
     print(posthoc_results)
     results_summary$posthoc <- posthoc_results$p.value
   }
@@ -437,7 +433,7 @@ util.withinSubjectsAnalysis <- function (data, columns, participantColumn = "Par
   options(scipen=saved_scipen,digits=saved_digits)
   rm(saved_scipen,saved_digits)
 
-  return(list(brief=results_summary, plot=plot, data=subset_data, stacked_data=stacked_data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
+  return(list(brief=results_summary, plot=plot, data=data, stacked_data=data, summary=summary_results, anova=anova_results, posthoc=posthoc_results))
 }
 
 
