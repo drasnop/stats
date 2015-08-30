@@ -180,7 +180,6 @@ util.withinSubjectsNonParametricAnalysis <- function (data, columns, participant
   stacked_data <- prepared_data$stack
   subset_data <- prepared_data$data
 
-  dput(subset_data)
   # summary stats
   descriptive <- util.descriptiveStats(subset_data, TRUE)
 
