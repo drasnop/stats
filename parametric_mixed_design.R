@@ -93,3 +93,14 @@ if(length(outliers) > 0){
 
 # boxplot main effect
 boxplot(as.formula(paste(measure,"~",between)), collapsed)
+
+
+## Correct Anchor Selected
+CAS <- aggregate(correctHookHasBeenSelected~interface+id, data, sum)
+par(mfrow=c(2,2))
+aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) plot(density(x), xlim=c(0,40), ylim=c(0,.05), main="numCorrectAnchorSelected") )
+#aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) hist(x, breaks=10, ylim=c(0,6), main="numCorrectAnchorSelected") )
+par(mfrow=c(1,1))
+
+plot(density(subset(CAS, interface!=0)$correctHookHasBeenSelected), main="numCorrectAnchorSelected")
+#hist(subset(CAS, interface!=0)$correctHookHasBeenSelected, main="numCorrectAnchorSelected", breaks=10)

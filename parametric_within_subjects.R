@@ -67,8 +67,10 @@ if(length(outliers) > 0){
 CAS <- aggregate(correctHookHasBeenSelected~interface+id, data, sum)
 par(mfrow=c(2,2))
 aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) plot(density(x), xlim=c(0,10), ylim=c(0,.15), main="numCorrectAnchorSelected") )
+#aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) hist(x, breaks=10, ylim=c(0,5), main="numCorrectAnchorSelected") )
 par(mfrow=c(1,1))
 
 plot(density(subset(CAS, interface!=0)$correctHookHasBeenSelected), main="numCorrectAnchorSelected")
+#hist(subset(CAS, interface!=0)$correctHookHasBeenSelected, main="numCorrectAnchorSelected", breaks=10)
 
 plot(CAS$correctHookHasBeenSelected, collapsed[[measure]])
