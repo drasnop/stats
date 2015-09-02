@@ -1,7 +1,7 @@
 n = 1000;
 
 pvalues <- sapply(1:n, function(x) {
-  ids <- sample(as.character(subset(collapsed, interface == "0" & block == "1")$id), 8)
+  ids <- sample(as.character(subset(collapsed, interface == "0" & block == "1")$id), 12)
   sampled <<- subset(collapsed, id %in% ids | interface != "0")
 
   suppressWarnings(results <- eval(parse(text=paste0("ezANOVA(data=sampled, dv=", measure, ", wid=id", ", between=", between, ", within=", within, ", type=3)"))))
