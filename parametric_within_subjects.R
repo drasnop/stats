@@ -18,12 +18,17 @@ data <- subset(data, block!=0)
 #data <- subset(data, !timeout)
 #data <- subset(data, targetGhost != 1)
 
+#data <- subset(data, targetTab != "Shortcuts")
+
 # log-transform
 if(is.numeric(data[[measure]]))
   data[[measure]] <- log(1+data[[measure]])
 
 # make sure factors are treated as factors
 data[[within]] <- factor(data[[within]])
+
+# rename and reorder interface
+data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
 
 if(is.numeric(data[[measure]])){
   # plot histograms to check normality
@@ -64,13 +69,21 @@ if(length(outliers) > 0){
 
 
 ## Correct Anchor Selected
-CAS <- aggregate(correctHookHasBeenSelected~interface+id, data, sum)
+CAS <- aggregate(correctAnchorHasBeenSelected~interface+id, data, sum)
+
+densityPlot <- function(d, measure, xlim, ylim){
+  plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
+}
+histogram <- function(d, measure, breaks, ylim){
+  hist(d[[measure]], breaks=breaks, ylim=ylim, main=unique(d$interface), xlab=measure)
+}
+
 par(mfrow=c(2,2))
-aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) plot(density(x), xlim=c(0,10), ylim=c(0,.15), main="numCorrectAnchorSelected") )
-#aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) hist(x, breaks=10, ylim=c(0,5), main="numCorrectAnchorSelected") )
+by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-5,15), c(0,.15))
+by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,5))
 par(mfrow=c(1,1))
 
-plot(density(subset(CAS, interface!=0)$correctHookHasBeenSelected), main="numCorrectAnchorSelected")
-#hist(subset(CAS, interface!=0)$correctHookHasBeenSelected, main="numCorrectAnchorSelected", breaks=10)
+plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), main="Num Correct Anchor Selected")
+#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, main="Num Correct Anchor Selected", breaks=10)
 
-plot(CAS$correctHookHasBeenSelected, collapsed[[measure]])
+#plot(CAS$correctAnchorHasBeenSelected, collapsed[[measure]])

@@ -1,6 +1,6 @@
 source("util.R")
 suppressPackageStartupMessages(library(dplyr))
-#library(car)
+library(car)
 #library(afex)
 
 # parametric data taken from each participant in the experiment
@@ -44,6 +44,9 @@ if(is.numeric(data[[measure]]))
 # make sure factors are treated as factors
 data[[within]] <- factor(data[[within]])
 data[[between]] <- factor(data[[between]])
+
+# rename and reorder interface
+data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
 
 if(is.numeric(data[[measure]])){
   # plot histograms to check normality
@@ -96,11 +99,19 @@ boxplot(as.formula(paste(measure,"~",between)), collapsed)
 
 
 ## Correct Anchor Selected
-CAS <- aggregate(correctHookHasBeenSelected~interface+id, data, sum)
+CAS <- aggregate(correctAnchorHasBeenSelected~interface+id, data, sum)
+
+densityPlot <- function(d, measure, xlim, ylim){
+  plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
+}
+histogram <- function(d, measure, breaks, ylim){
+  hist(d[[measure]], breaks=breaks, ylim=ylim, main=unique(d$interface), xlab=measure)
+}
+
 par(mfrow=c(2,2))
-aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) plot(density(x), xlim=c(0,40), ylim=c(0,.05), main="numCorrectAnchorSelected") )
-#aggregate(correctHookHasBeenSelected ~ interface, CAS, function(x) hist(x, breaks=10, ylim=c(0,6), main="numCorrectAnchorSelected") )
+by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-20,60), c(0,.046))
+#by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,6))
 par(mfrow=c(1,1))
 
-plot(density(subset(CAS, interface!=0)$correctHookHasBeenSelected), main="numCorrectAnchorSelected")
-#hist(subset(CAS, interface!=0)$correctHookHasBeenSelected, main="numCorrectAnchorSelected", breaks=10)
+plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), main="Num Correct Anchor Selected")
+#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, main="Num Correct Anchor Selected", breaks=10)
