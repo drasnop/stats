@@ -83,7 +83,16 @@ by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-5,15), c(
 by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,5))
 par(mfrow=c(1,1))
 
-plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), main="Num Correct Anchor Selected")
-#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, main="Num Correct Anchor Selected", breaks=10)
+plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xlab="Num Correct Anchor Selected", main="")
+#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, xlab="Num Correct Anchor Selected", breaks=10, main="")
 
-#plot(CAS$correctAnchorHasBeenSelected, collapsed[[measure]])
+plot(CAS$correctAnchorHasBeenSelected, collapsed[[measure]])
+
+# scatter plot
+comp <- merge(CAS, collapsed)
+tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
+
+scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
+#scatter <- scatter + geom_jitter(size=4, aes(color=interface, shape=block))
+scatter <- scatter + geom_point(size=4, aes(color=interface))
+print(scatter)

@@ -1,6 +1,7 @@
 source("util.R")
 suppressPackageStartupMessages(library(dplyr))
 library(car)
+library(ggplot2)
 #library(afex)
 
 # parametric data taken from each participant in the experiment
@@ -99,7 +100,7 @@ boxplot(as.formula(paste(measure,"~",between)), collapsed)
 
 
 ## Correct Anchor Selected
-CAS <- aggregate(correctAnchorHasBeenSelected~interface+id, data, sum)
+CAS <- aggregate(correctAnchorHasBeenSelected~interface+block+id, data, sum)
 
 densityPlot <- function(d, measure, xlim, ylim){
   plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
@@ -113,5 +114,15 @@ by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-20,60), c
 #by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,6))
 par(mfrow=c(1,1))
 
-plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), main="Num Correct Anchor Selected")
-#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, main="Num Correct Anchor Selected", breaks=10)
+plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xlab="Num Correct Anchor Selected", main="")
+#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, xlab="Num Correct Anchor Selected", main="", breaks=10)
+
+# scatter plot
+comp <- merge(CAS, collapsed)
+tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
+
+scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
+#scatter <- scatter + geom_jitter(size=4, aes(color=interface, shape=block))
+scatter <- scatter + geom_point(size=4, aes(color=interface))
+scatter <- scatter + facet_grid(~ block) 
+print(scatter)
