@@ -2,6 +2,7 @@ source("util.R")
 suppressPackageStartupMessages(library(dplyr))
 library(car)
 library(ggplot2)
+library(Cairo)
 #library(afex)
 
 # parametric data taken from each participant in the experiment
@@ -120,9 +121,11 @@ plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xl
 # scatter plot
 comp <- merge(CAS, collapsed)
 tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
+CairoWin()    # separate rendering window for antialiasing
 
 scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
 #scatter <- scatter + geom_jitter(size=4, aes(color=interface, shape=block))
-scatter <- scatter + geom_point(size=4, aes(color=interface))
-scatter <- scatter + facet_grid(~ block) 
+scatter <- scatter + geom_point(data=subset(comp, block==1), size=4, shape=21, aes(color=interface))
+scatter <- scatter + geom_point(data=subset(comp, block==2), size=2, shape=19, aes(color=interface))
+#scatter <- scatter + facet_grid(~ block) 
 print(scatter)
