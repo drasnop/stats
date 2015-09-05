@@ -121,11 +121,20 @@ plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xl
 # scatter plot
 comp <- merge(CAS, collapsed)
 tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
+
 CairoWin()    # separate rendering window for antialiasing
 
 scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
-#scatter <- scatter + geom_jitter(size=4, aes(color=interface, shape=block))
-scatter <- scatter + geom_point(data=subset(comp, block==1), size=4, shape=21, aes(color=interface))
-scatter <- scatter + geom_point(data=subset(comp, block==2), size=2, shape=19, aes(color=interface))
-#scatter <- scatter + facet_grid(~ block) 
+
+#scatter <- scatter + geom_point(data=subset(comp, block==1), size=4, shape=21, aes(color=interface))
+#scatter <- scatter + geom_point(data=subset(comp, block==2), size=2, shape=19, aes(color=interface))
+#scatter <- scatter + geom_line(aes(group=id, color=interface))
+
+scatter <- scatter + geom_jitter(size=3, aes(color=interface))
+scatter <- scatter + facet_grid(~ block)
+
 print(scatter)
+
+# save output to file
+#CairoPNG("C:/Users/Antoine/Dropbox/research/Experiment/figures/mturk/0.png",1920, 900)
+# wait a couple seconds before calling again print(scatter)
