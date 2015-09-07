@@ -1,8 +1,5 @@
 source("util.R")
-suppressPackageStartupMessages(library(dplyr))
 library(car)
-library(ggplot2)
-library(Cairo)
 #library(afex)
 
 # parametric data taken from each participant in the experiment
@@ -98,55 +95,3 @@ if(length(outliers) > 0){
 
 # boxplot main effect
 boxplot(as.formula(paste(measure,"~",between)), collapsed)
-
-
-## Correct Anchor Selected
-CAS <- aggregate(correctAnchorHasBeenSelected~interface+block+id, data, sum)
-
-densityPlot <- function(d, measure, xlim, ylim){
-  plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
-}
-histogram <- function(d, measure, breaks, ylim){
-  hist(d[[measure]], breaks=breaks, ylim=ylim, main=unique(d$interface), xlab=measure)
-}
-
-par(mfrow=c(2,2))
-by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-20,60), c(0,.046))
-#by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,6))
-par(mfrow=c(1,1))
-
-plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xlab="Num Correct Anchor Selected", main="")
-#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, xlab="Num Correct Anchor Selected", main="", breaks=10)
-
-# scatter plot
-comp <- merge(CAS, collapsed)
-tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
-
-#CairoWin()    # separate rendering window for antialiasing
-
-scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
-
-#scatter <- scatter + geom_point(data=subset(comp, block==1), size=4, shape=21, aes(color=interface))
-#scatter <- scatter + geom_point(data=subset(comp, block==2), size=2, shape=19, aes(color=interface))
-#scatter <- scatter + geom_line(aes(group=id, color=interface))
-
-scatter <- scatter + geom_jitter(size=3, aes(color=interface))
-scatter <- scatter + facet_grid(~ block)
-
-print(scatter)
-
-# save output to file
-#CairoPNG("C:/Users/Antoine/Dropbox/research/Experiment/figures/mturk/0.png",1920, 900)
-# wait a couple seconds before calling again print(scatter)
-
-distribution <- ggplot(subset(CAS, interface!= "Control"), aes(x=correctAnchorHasBeenSelected))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=block))
-#distribution <- distribution + coord_cartesian(xlim = c(-5, 25)) 
-print(distribution)
-
-data <- mutate(data, ASscore= correctAnchorHasBeenSelected/numSelectedHooks)
-SAS <- aggregate(ASscore~interface+block+id, data, mean)
-
-distribution <- ggplot(subset(SAS, interface!= "Control"), aes(x=ASscore))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=block))
-print(distribution)

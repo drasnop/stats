@@ -1,7 +1,4 @@
 source("util.R")
-suppressPackageStartupMessages(library(dplyr))
-library(ggplot2)
-library(Cairo)
 
 # parametric data taken from each participant in the experiment (within-subjects)
 filename <- function(batch){
@@ -29,6 +26,7 @@ if(is.numeric(data[[measure]]))
 
 # make sure factors are treated as factors
 data[[within]] <- factor(data[[within]])
+data$block <- factor(data$block)
 
 # rename and reorder interface
 data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
@@ -69,43 +67,3 @@ if(length(outliers) > 0){
   util.printHeader("Outliers")
   print(collapsed[collapsed[[measure]] %in% outliers, ])
 }
-
-
-## Correct Anchor Selected
-CAS <- aggregate(correctAnchorHasBeenSelected~interface+block+id, data, sum)
-
-densityPlot <- function(d, measure, xlim, ylim){
-  plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
-}
-histogram <- function(d, measure, breaks, ylim){
-  hist(d[[measure]], breaks=breaks, ylim=ylim, main=unique(d$interface), xlab=measure)
-}
-
-par(mfrow=c(2,2))
-by(CAS, CAS$interface, densityPlot, "correctAnchorHasBeenSelected", c(-5,15), c(0,.15))
-by(CAS, CAS$interface, histogram, "correctAnchorHasBeenSelected", 10, c(0,5))
-par(mfrow=c(1,1))
-
-plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xlab="Num Correct Anchor Selected", main="")
-#hist(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected, xlab="Num Correct Anchor Selected", breaks=10, main="")
-
-plot(CAS$correctAnchorHasBeenSelected, collapsed[[measure]])
-
-# scatter plot
-comp <- merge(CAS, collapsed)
-comp <- mutate(comp, controlStart= id<=6)
-tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
-
-#CairoWin()    # separate rendering window for antialiasing
-
-scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
-#scatter <- scatter + geom_jitter(size=3, aes(color=interface))
-#scatter <- scatter + geom_point(aes(color=interface, size=block)) + scale_size_area()
-scatter <- scatter + geom_point(size=3, aes(color=interface))
-scatter <- scatter + facet_grid(controlStart ~ block)
-scatter <- scatter + facet_grid( ~ controlStart)
-print(scatter)
-
-# save output to file
-#CairoPNG("C:/Users/Antoine/Dropbox/research/Experiment/figures/lab/0.png",1800, 900)
-# wait a couple seconds before calling again print(scatter)
