@@ -1,4 +1,7 @@
 source("util.R")
+suppressPackageStartupMessages(library(dplyr))
+library(ggplot2)
+library(Cairo)
 
 # parametric data taken from each participant in the experiment (within-subjects)
 filename <- function(batch){
@@ -42,7 +45,7 @@ if(is.numeric(data[[measure]])){
 
 
 ## aggregate
-collapsed <- aggregate(as.formula(paste(measure,"~ id +",within)), data, estimator)
+collapsed <- aggregate(as.formula(paste(measure,"~ id + block +",within)), data, estimator)
 util.printBigHeader(paste0("Running Parametric Analysis for ", measure, " on ", within," (within-subject)"));
 
 
@@ -69,7 +72,7 @@ if(length(outliers) > 0){
 
 
 ## Correct Anchor Selected
-CAS <- aggregate(correctAnchorHasBeenSelected~interface+id, data, sum)
+CAS <- aggregate(correctAnchorHasBeenSelected~interface+block+id, data, sum)
 
 densityPlot <- function(d, measure, xlim, ylim){
   plot(density(d[[measure]]), xlim=xlim, ylim=ylim, main=unique(d$interface), xlab=measure)
@@ -90,9 +93,19 @@ plot(CAS$correctAnchorHasBeenSelected, collapsed[[measure]])
 
 # scatter plot
 comp <- merge(CAS, collapsed)
+comp <- mutate(comp, controlStart= id<=6)
 tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
 
+#CairoWin()    # separate rendering window for antialiasing
+
 scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
-#scatter <- scatter + geom_jitter(size=4, aes(color=interface, shape=block))
-scatter <- scatter + geom_point(size=4, aes(color=interface))
+#scatter <- scatter + geom_jitter(size=3, aes(color=interface))
+#scatter <- scatter + geom_point(aes(color=interface, size=block)) + scale_size_area()
+scatter <- scatter + geom_point(size=3, aes(color=interface))
+scatter <- scatter + facet_grid(controlStart ~ block)
+scatter <- scatter + facet_grid( ~ controlStart)
 print(scatter)
+
+# save output to file
+#CairoPNG("C:/Users/Antoine/Dropbox/research/Experiment/figures/lab/0.png",1800, 900)
+# wait a couple seconds before calling again print(scatter)
