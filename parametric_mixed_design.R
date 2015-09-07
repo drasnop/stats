@@ -122,7 +122,7 @@ plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xl
 comp <- merge(CAS, collapsed)
 tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
 
-CairoWin()    # separate rendering window for antialiasing
+#CairoWin()    # separate rendering window for antialiasing
 
 scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
 
@@ -138,3 +138,15 @@ print(scatter)
 # save output to file
 #CairoPNG("C:/Users/Antoine/Dropbox/research/Experiment/figures/mturk/0.png",1920, 900)
 # wait a couple seconds before calling again print(scatter)
+
+distribution <- ggplot(subset(CAS, interface!= "Control"), aes(x=correctAnchorHasBeenSelected))
+distribution <- distribution + geom_density(trim=FALSE, aes(color=block))
+#distribution <- distribution + coord_cartesian(xlim = c(-5, 25)) 
+print(distribution)
+
+data <- mutate(data, ASscore= correctAnchorHasBeenSelected/numSelectedHooks)
+SAS <- aggregate(ASscore~interface+block+id, data, mean)
+
+distribution <- ggplot(subset(SAS, interface!= "Control"), aes(x=ASscore))
+distribution <- distribution + geom_density(trim=FALSE, aes(color=block))
+print(distribution)
