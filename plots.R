@@ -12,11 +12,13 @@ theme_set(theme_miniBW())
 
 #------ data preparation ------#
 
-data <- mutate(data, ASscore= correctAnchorHasBeenSelected/numSelectedHooks)
+#data <- mutate(data, ASscore= correctAnchorHasBeenSelected/numSelectedHooks)
+data <- mutate(data, ASscore= ifelse(numSelectedHooks>1, .5, correctAnchorHasBeenSelected))
 SAS <- aggregate(ASscore~interface+block+id, data, mean)
 CAS <- aggregate(correctAnchorHasBeenSelected~interface+block+id, data, sum)
 CAS <- mutate(CAS, controlStart= id %in% seq(1:6))
 comp <- merge(CAS, collapsed)
+comp <- merge(comp, SAS)
 
 
 #------ density Correct Anchor Selected ------#
@@ -43,6 +45,7 @@ plot(density(subset(CAS, interface!="Control")$correctAnchorHasBeenSelected), xl
 #------ scatter plot Performance vs CAS ------#
 
 tableauPalette <- c("#1F77B4", "#17BECF", "#FF7F0E", "#9467BD")
+DarkYlGnBu <- c("#7fcdbb", "#41b6c4", "#225ea8", "#000000")
 scatter <- ggplot(comp, aes(x=correctAnchorHasBeenSelected, y=shortDuration)) + scale_colour_manual(values=tableauPalette)
 
 #scatter <- scatter + geom_point(data=subset(comp, block==1), size=4, shape=21, aes(color=interface))
@@ -69,22 +72,22 @@ print(scatter + theme_bw())
 #------ comparative distributions : block ------#
 
 distribution <- ggplot(subset(CAS, interface!= "Control"), aes(x=correctAnchorHasBeenSelected))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=block)) + scale_color_brewer(palette= "YlGnBu")
+distribution <- distribution + geom_density(trim=FALSE, aes(color=block)) + scale_color_manual(values=DarkYlGnBu)
 #distribution <- distribution + coord_cartesian(xlim = c(-5, 25)) 
 print(distribution)
 
 distribution <- ggplot(subset(SAS, interface!= "Control"), aes(x=ASscore))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=block)) + scale_color_brewer(palette= "Dark2")
+distribution <- distribution + geom_density(trim=FALSE, aes(color=block)) + scale_color_manual(values=DarkYlGnBu)
 print(distribution)
 
 
 #------ comparative distributions : interface ------#
 
 distribution <- ggplot(subset(CAS, interface!= "Control"), aes(x=correctAnchorHasBeenSelected))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=interface)) + scale_colour_manual(values=tableauPalette)
+distribution <- distribution + geom_density(trim=FALSE, aes(color=interface)) + scale_color_manual(values=tableauPalette)
 #distribution <- distribution + coord_cartesian(xlim = c(-5, 25)) 
 print(distribution)
 
 distribution <- ggplot(subset(SAS, interface!= "Control"), aes(x=ASscore))
-distribution <- distribution + geom_density(trim=FALSE, aes(color=interface)) + scale_colour_manual(values=tableauPalette)
+distribution <- distribution + geom_density(trim=FALSE, aes(color=interface)) + scale_color_manual(values=tableauPalette)
 print(distribution)
