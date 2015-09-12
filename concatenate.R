@@ -1,5 +1,5 @@
 # file to concatenate
-file="participants";
+file="trials";
 
 # parametric data taken from each participant in the experiment
 filename <- function(batch, file){
@@ -9,8 +9,7 @@ csv <- lapply(c("2-24", "3-24", "rect-15", "4-12", "rect-2"), function(batch) re
 data <- do.call(rbind, csv)
 
 # remove problematic participants
-#data <- subset(data, problems<=0)
-data <- subset(data, is.na(problems) | problems == "")
+data <- subset(data, problems<=0)
 
 # outlier in Customization Mode (one very slow, one with 14 errors, one with 18 errors)
 data <- subset(data, !(id %in% c("xqpi3r9n")))
