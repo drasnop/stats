@@ -1,10 +1,8 @@
 source("util.R")
+source("data_manager.R")
 
 # parametric data taken from each participant in the experiment (within-subjects)
-filename <- function(batch){
-  return(paste0("C:/Users/Antoine/programmation/web/stencil-analysis/", batch, "/trials-", batch, ".csv"))
-}
-data <- read.csv(filename("lab"))
+data <- load.lab("trials")
 
 measure <- "shortDuration"
 estimator <- median
