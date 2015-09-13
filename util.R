@@ -468,19 +468,22 @@ util.betweenSubjectsAnalysis <- function (data, participantColumn = "Participant
   print(anova_results)
 
   # boxplot the data
-  boxplot(medianShortDuration~interfaceType,data=data)
+  boxplot(data[[dvName]]~data[[ivName]],data=data)
 
-  if (anova_results$ANOVA$p > 0.05) {
-    writeLines("==> ANOVA not significant.")
-    posthoc_results <- NULL
+  # post-hoc between factor: independent samples t-tests
+  posthoc_results = list()
+  
+  if (anova_results$ANOVA$p[1] > 0.05) {
+    writeLines("==> ANOVA on between factor not significant.")
+    posthoc_results$between <- NULL
   } else if(length(unique(data[[ivName]])) <= 2) {
     # no post-hoc test if independent variable has only two levels
-    posthoc_results <- NULL
+    posthoc_results$between <- NULL
   } else{
-    util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
-    posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
-    print(posthoc_results)
-    results_summary$posthoc <- posthoc_results$p.value
+    util.printHeader(paste("Post-hoc Tests on", ivName,"(between-subjects)"))
+    posthoc_results$between <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", pool.sd=F)
+    print(posthoc_results$between)
+    results_summary$posthoc$between <- posthoc_results$between$p.value
   }
 
   # revert options for scientific notation
