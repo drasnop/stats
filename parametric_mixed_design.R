@@ -12,7 +12,7 @@ data <- sampleControlParticipants(data)
 
 measure <- "shortDuration"
 estimator <- median
-between <- "partition"
+between <- "interface"
 within <- "block"
 
 # remove practice trial
@@ -82,6 +82,19 @@ if(length(outliers) > 0){
 
 # boxplot main effect
 boxplot(as.formula(paste(measure,"~",between)), collapsed)
+
+# de-logtransform effect sizes
+delog <- function(x) exp(x)-1
+difference <- function(x, y){
+  absolute <- delog(x)-delog(y)
+  percentage <- absolute/delog(x)
+  writeLines(paste0(round(absolute, digits=2), ' ', round(percentage*100, digits=0), '%'))  
+} 
+means.df <- data %>% group_by(interface)  %>% summarize(Mean=mean(shortDuration))
+means <- list()
+by(means.df, 1:nrow(means.df), function(row) means[as.character(row$interface)] <<- row$Mean)
+difference(means$Full, means$Minimal)
+difference(means$Control, means$Minimal)
 
 # verify that design in balanced
 #data %>% group_by(interface, partition, defaults, block) %>% summarize(count=n()/20) %>% print.data.frame()
