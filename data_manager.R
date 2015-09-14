@@ -27,6 +27,19 @@ removeProblemsAndOutliers <- function(data){
   return(data)
 }
 
+prepare <- function(data){
+  # rename and reorder interface
+  data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
+  
+  return(data)
+}
+
+sampleControlParticipants <- function(data){
+  #selected <- c("35ttjsmh", "0dksgr1h", "pc7v0crm", "qraxf5i3", "sqtqxb7a", "c7nb2rhh", "yj20fln6", "yq1emvsf", "knm8okdb", "vbnkj42r", "8cugv923", "f5arveax");
+  selected <- c("q7d654an", "jhzxk2pr", "3i18spus", "n30x5hx4", "xt4cukka", "0dksgr1h", "pc7v0crm", "vbnkj42r", "yq1emvsf", "yj20fln6", "3e1iqt1k", "f5arveax");
+  return(subset(data, id %in% selected | interface != "Control" ))
+}
+
 concatenate <- function(file){
   data <- load.mturk(file)
   data <- removeProblemsAndOutliers(data)

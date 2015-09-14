@@ -5,7 +5,9 @@ library(car)
 
 # parametric data taken from each participant in the experiment
 data <- load.mturk("trials")
+data <- prepare(data)
 data <- removeProblemsAndOutliers(data)
+data <- sampleControlParticipants(data)
 
 measure <- "shortDuration"
 estimator <- median
@@ -30,8 +32,6 @@ if(is.numeric(data[[measure]]))
 data[[within]] <- factor(data[[within]])
 data[[between]] <- factor(data[[between]])
 
-# rename and reorder interface
-data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
 
 if(is.numeric(data[[measure]])){
   # plot histograms to check normality
