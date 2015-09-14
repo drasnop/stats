@@ -36,7 +36,9 @@ prepare <- function(data){
 
 sampleControlParticipants <- function(data){
   #selected <- c("35ttjsmh", "0dksgr1h", "pc7v0crm", "qraxf5i3", "sqtqxb7a", "c7nb2rhh", "yj20fln6", "yq1emvsf", "knm8okdb", "vbnkj42r", "8cugv923", "f5arveax");
-  selected <- c("q7d654an", "jhzxk2pr", "3i18spus", "n30x5hx4", "xt4cukka", "0dksgr1h", "pc7v0crm", "vbnkj42r", "yq1emvsf", "yj20fln6", "3e1iqt1k", "f5arveax");
+  #selected <- c("q7d654an", "jhzxk2pr", "3i18spus", "n30x5hx4", "xt4cukka", "0dksgr1h", "pc7v0crm", "vbnkj42r", "yq1emvsf", "yj20fln6", "3e1iqt1k", "f5arveax");
+  #selected <- c("tsmka767", "xt4cukka", "yq1emvsf", "3i18spus", "4fyy1fff", "f5arveax", "yj20fln6", "02zz3ylx", "g55seji2", "0dksgr1h", "qraxf5i3", "c7nb2rhh");
+  selected <- c("q7d654an", "tsmka767", "yq1emvsf", "4fyy1fff", "n30x5hx4", "3i18spus", "vbnkj42r", "f9gqb0kz", "knm8okdb", "c7nb2rhh", "k7ja666x", "jhzxk2pr");
   return(subset(data, id %in% selected | interface != "Control" ))
 }
 

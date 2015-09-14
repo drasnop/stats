@@ -1,5 +1,6 @@
 source("util.R")
 source("data_manager.R")
+suppressPackageStartupMessages(library(dplyr))
 library(car)
 #library(afex)
 
@@ -11,7 +12,7 @@ data <- sampleControlParticipants(data)
 
 measure <- "shortDuration"
 estimator <- median
-between <- "interface"
+between <- "partition"
 within <- "block"
 
 # remove practice trial
@@ -81,3 +82,6 @@ if(length(outliers) > 0){
 
 # boxplot main effect
 boxplot(as.formula(paste(measure,"~",between)), collapsed)
+
+# verify that design in balanced
+#data %>% group_by(interface, partition, defaults, block) %>% summarize(count=n()/20) %>% print.data.frame()
