@@ -1,8 +1,5 @@
 source("util.R")
 source("data_manager.R")
-suppressPackageStartupMessages(library(dplyr))
-library(car)
-#library(afex)
 
 # parametric data taken from each participant in the experiment
 data <- load.mturk("trials")

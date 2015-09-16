@@ -1,3 +1,7 @@
+suppressPackageStartupMessages(library(dplyr))
+library(car)
+#library(afex)
+
 filename <- function(batch, file){
   return(paste0("C:/Users/Antoine/programmation/web/stencil-analysis/", batch, "/", file, "-", batch, ".csv"))
 }
@@ -15,7 +19,7 @@ removeProblemsAndOutliers <- function(data){
   # remove problematic participants
   data <- subset(data, problems<=0)
   
-  # outlier in Customization Mode (one very slow, one with 14 errors, one with 18 errors)
+  # outlier in Customization Mode (one very slow in Control, two with 14 and 18 errors in MC and M)
   data <- subset(data, !(id %in% c("xqpi3r9n")))
   data <- subset(data, !(id %in% c("bicjgan9")))
   data <- subset(data, !(id %in% c("yacy699g")))
@@ -29,7 +33,7 @@ removeProblemsAndOutliers <- function(data){
 
 prepare <- function(data){
   # rename and reorder interface
-  data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
+  data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full+Highlight", "Control"))
   
   return(data)
 }

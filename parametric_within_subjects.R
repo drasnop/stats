@@ -41,7 +41,7 @@ if(is.numeric(data[[measure]])){
 
 
 ## aggregate
-collapsed <- aggregate(as.formula(paste(measure,"~ id + block +",within)), data, estimator)
+collapsed <- aggregate(as.formula(paste(measure,"~ id +",within)), data, estimator)
 util.printBigHeader(paste0("Running Parametric Analysis for ", measure, " on ", within," (within-subject)"));
 
 
@@ -65,3 +65,16 @@ if(length(outliers) > 0){
   util.printHeader("Outliers")
   print(collapsed[collapsed[[measure]] %in% outliers, ])
 }
+
+# de-logtransform effect sizes
+delog <- function(x) exp(x)-1
+difference <- function(x, y){
+  absolute <- delog(x)-delog(y)
+  percentage <- absolute/delog(x)
+  writeLines(paste0(round(absolute, digits=2), ' ', round(percentage*100, digits=0), '%'))  
+} 
+means.df <- data %>% group_by(interface)  %>% summarize(Mean=mean(shortDuration))
+means <- list()
+by(means.df, 1:nrow(means.df), function(row) means[as.character(row$interface)] <<- row$Mean)
+difference(means$Full, means$`Minimal+Context`)
+difference(means$Control, means$`Minimal+Context`)
