@@ -256,6 +256,8 @@ util.betweenSubjectsNonParametricAnalysis <- function (data, columns, participan
   # (otherwise get the error: not an unreplicated complete block design)
   data[[participantName]] <- factor(data[[participantName]])
 
+  boxplot(data[[dvName]]~data[[ivName]],data=data)
+
   #dput(subset_data)
   # summary stats
   descriptive <- util.descriptiveStats(subset_data, TRUE)
@@ -290,20 +292,20 @@ util.betweenSubjectsNonParametricAnalysis <- function (data, columns, participan
     return(list(brief=results_summary, data=subset_data, stacked_data=data, descriptive=descriptive, wilcoxon=wilcoxon_results))
   }
 
-  writeLines("\nMore than 2 levels, using Friedman test.\n");
+  writeLines("\nMore than 2 levels, using Kruskal-Wallis test.\n");
 
-  # non-parametric anova equivalent: Friedman test
-  util.printHeader("Friedman Rank Sum Test Results")
+  # non-parametric anova equivalent: Kruskal-Wallis test
+  util.printHeader("Kruskal-Wallis Rank Sum Test Results")
   # sample formula: rating ~ condition | participant
-  friedman_results <- friedman.test(as.formula(paste(dvName, "~", ivName, "|", participantName)), data=data)
+  kruskal_results <- kruskal.test(as.formula(paste(dvName, "~", ivName)), data=data)
 
   # pretty print
-  results_summary$friedman = paste0("chi^2(", as.numeric(friedman_results$parameter), ") = ", round(as.numeric(friedman_results$statistic), 3), ", ", util.pToString(friedman_results$p.value))
-  writeLines(results_summary$friedman)
-  print(friedman_results)
+  results_summary$kruskal = paste0("chi^2(", as.numeric(kruskal_results$parameter), ") = ", round(as.numeric(kruskal_results$statistic), 3), ", ", util.pToString(kruskal_results$p.value))
+  writeLines(results_summary$kruskal)
+  print(kruskal_results)
 
-  if (friedman_results$p.value > 0.05) {
-    writeLines("==> Friedman test not significant.")
+  if (kruskal_results$p.value > 0.05) {
+    writeLines("==> Kruskal-Wallis test not significant.")
     posthoc_results <- NULL
   } else {
     # post-hoc tests
@@ -315,7 +317,7 @@ util.betweenSubjectsNonParametricAnalysis <- function (data, columns, participan
     results_summary$posthoc <- list(p.value=posthoc_results$p.value, r=posthoc_results$r)
   }
 
-  return(list(brief=results_summary, data=subset_data, stacked_data=data, descriptive=descriptive, friedman=friedman_results, posthoc=posthoc_results))
+  return(list(brief=results_summary, data=subset_data, stacked_data=data, descriptive=descriptive, kruskal=kruskal_results, posthoc=posthoc_results))
 }
 
 
