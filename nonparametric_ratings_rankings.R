@@ -1,17 +1,17 @@
 source("util.R")
+source("data_manager.R")
 
 # Data for the same likert-style question asked after each block in the experiment
-#all_data <- read.csv("C:/Users/Antoine/programmation/web/stencil-analysis/lab/intermediate-lab.csv")
-all_data <- read.csv("C:/Users/Antoine/programmation/web/stencil-analysis/lab/rankings-lab.csv")
+data <- load.lab("intermediate")
 
-measure="likingRank"
+measure="speed"
 within="interface"
 
 # subset the data
 columns <- sapply(0:3, function(x) paste0(measure, x))
 
 util.printBigHeader("Running Non-parametric Within-subjects Analysis")
-results <- util.withinSubjectsNonParametricAnalysis(all_data, columns, participantColumn = "id", dvName = measure, ivName = within, participantName = "id")
+results <- util.withinSubjectsNonParametricAnalysis(data, columns, participantColumn = "id", dvName = measure, ivName = within, participantName = "id")
 
 # boxplot the data, if it is somewhat numeric
 boxplot(as.formula(paste(measure,"~",within)), results$stacked_data)

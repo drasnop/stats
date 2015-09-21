@@ -1,7 +1,7 @@
 source("util.R")
 source("data_manager.R")
 
-# Data for the same likert-style question asked after each block in the experiment
+# Data for likert-style questions asked at the end of the experiment
 data <- load.mturk("questionnaires")
 data <- prepare(data)
 data <- removeProblemsAndOutliers(data)
