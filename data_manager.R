@@ -32,6 +32,8 @@ removeProblemsAndOutliers <- function(data){
 }
 
 prepare <- function(data){
+  data$id <- factor(data$id)
+  
   # rename and reorder interface
   data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full+Highlight", "Control"))
   
@@ -54,5 +56,40 @@ concatenate <- function(file){
   write.csv(data, filename("mturk", file), row.names = FALSE, na = "")
 }
 
+localMaxima <- function(x) {
+  # Use -Inf instead if x is numeric (non-integer)
+  y <- diff(c(-Inf, x)) > 0L
+  rle(y)$lengths
+  y <- cumsum(rle(y)$lengths)
+  y <- y[seq.int(1L, length(y), 2L)]
+  if (x[[1]] == x[[2]]) {
+    y <- y[-1]
+  }
+  y
+}
 
+localMinima <- function(x) {
+  # Use -Inf instead if x is numeric (non-integer)
+  y <- diff(c(Inf, x)) < 0L
+  rle(y)$lengths
+  y <- cumsum(rle(y)$lengths)
+  y <- y[seq.int(1L, length(y), 2L)]
+  if (x[[1]] == x[[2]]) {
+    y <- y[-1]
+  }
+  y
+}
+
+rightMode <- function(data){
+  # compute separation point between the two modes
+  CAS <- aggregate(correctAnchorHasBeenSelected~id+interface, subset(data, interface!="Control"), mean)
+  d <- density(CAS$correctAnchorHasBeenSelected)
+  min <- d$x[localMinima(d$y)][2]
+  
+  writeLines(paste("modes separation point:", round(min, digits=2)))
+  
+  # find ids of participants in the left mode
+  test <- aggregate(correctAnchorHasBeenSelected~id, CAS, mean)
+  return(subset(test, correctAnchorHasBeenSelected>min)$id) 
+}
 

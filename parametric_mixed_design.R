@@ -6,11 +6,17 @@ data <- load.mturk("trials")
 data <- prepare(data)
 data <- removeProblemsAndOutliers(data)
 data <- sampleControlParticipants(data)
+nParticipants <- length(unique(data$id))
+anchorSearch.ids <- rightMode(data)
 
 measure <- "shortDuration"
 estimator <- median
 between <- "interface"
 within <- "block"
+
+# remove "anchor search" or "search full panel" participants
+data <- subset(data, (id %in% anchorSearch.ids) | interface=="Control")
+data <- subset(data, interface!="Full+Highlight")
 
 # remove practice trial
 data <- subset(data, block!=0)
@@ -81,6 +87,7 @@ if(length(outliers) > 0){
 boxplot(as.formula(paste(measure,"~",between)), collapsed)
 
 # de-logtransform effect sizes
+writeLines("")
 delog <- function(x) exp(x)-1
 difference <- function(x, y){
   absolute <- delog(x)-delog(y)
@@ -90,8 +97,10 @@ difference <- function(x, y){
 means.df <- data %>% group_by(interface)  %>% summarize(Mean=mean(shortDuration))
 means <- list()
 by(means.df, 1:nrow(means.df), function(row) means[as.character(row$interface)] <<- row$Mean)
-difference(means$Full, means$Minimal)
+#difference(means$Full, means$Minimal)
 difference(means$Control, means$Minimal)
+
+writeLines(paste((nParticipants-length(unique(data$id))), "participants removed out of", nParticipants))
 
 # verify that design in balanced
 #data %>% group_by(interface, partition, defaults, block) %>% summarize(count=n()/20) %>% print.data.frame()

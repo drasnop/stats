@@ -384,7 +384,7 @@ util.pairwise.wilcoxonSignedRankTest <- function (x, g, p.adjust.method = p.adju
 
 
 # run a repeated-measures ANOVA + required tests, exclusively within-subjects
-util.withinSubjectsAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant") {
+util.withinSubjectsAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivName = "condition", participantName = "participant", correction="bonferroni") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
   options(scipen=100,digits=4)
@@ -425,7 +425,7 @@ util.withinSubjectsAnalysis <- function (data, participantColumn = "Participant"
     posthoc_results <- NULL
   } else{
     util.printHeader("Post-hoc Test Results (Pairwise t-Test with Bonferroni correction)")
-    posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method="bonferroni", paired=T)
+    posthoc_results <- pairwise.t.test(data[[dvName]], data[[ivName]], p.adjust.method=correction, paired=T)
     print(posthoc_results)
     results_summary$posthoc <- posthoc_results$p.value
   }
@@ -497,7 +497,7 @@ util.betweenSubjectsAnalysis <- function (data, participantColumn = "Participant
 
 
 # run a two-way ANOVA + required tests, with one factor between-subjects and one factor within-subjects
-util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivbName = "between", ivwName = "within", participantName = "participant") {
+util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", dvName = "value", ivbName = "between", ivwName = "within", participantName = "participant", correction="bonferroni") {
   saved_scipen = getOption("scipen")
   saved_digits = getOption("digits")
   options(scipen=100,digits=4)
@@ -550,7 +550,7 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
     posthoc_results$between <- NULL
   } else{
     util.printHeader(paste("Post-hoc Tests on", ivbName,"(between-subjects)"))
-    posthoc_results$between <- pairwise.t.test(data[[dvName]], data[[ivbName]], p.adjust.method="bonferroni", pool.sd=F)
+    posthoc_results$between <- pairwise.t.test(data[[dvName]], data[[ivbName]], p.adjust.method=correction, pool.sd=F)
     print(posthoc_results$between)
     results_summary$posthoc$between <- posthoc_results$between$p.value
   }
@@ -565,7 +565,7 @@ util.mixedDesignAnalysis <- function (data, participantColumn = "Participant", d
     posthoc_results$within <- NULL
   } else{
     util.printHeader(paste("Post-hoc Tests on", ivwName,"(within-subjects)"))
-    posthoc_results$within <- pairwise.t.test(data[[dvName]], data[[ivwName]], p.adjust.method="bonferroni", paired=T)
+    posthoc_results$within <- pairwise.t.test(data[[dvName]], data[[ivwName]], p.adjust.method=correction, paired=T)
     print(posthoc_results$within)
     results_summary$posthoc$within <- posthoc_results$within$p.value
   }

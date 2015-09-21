@@ -3,10 +3,16 @@ source("data_manager.R")
 
 # parametric data taken from each participant in the experiment (within-subjects)
 data <- load.lab("trials")
+data <- prepare(data)
+anchorSearch.ids <- rightMode(data)
 
 measure <- "shortDuration"
 estimator <- median
 within <- "interface"
+between <- "MCafterM"
+
+# remove "anchor search" or "search full panel" participants
+data <- subset(data, !(id %in% anchorSearch.ids))
 
 # remove practice trial
 data <- subset(data, block!=0)
@@ -26,8 +32,8 @@ if(is.numeric(data[[measure]]))
 data[[within]] <- factor(data[[within]])
 data$block <- factor(data$block)
 
-# rename and reorder interface
-data$interface <- factor(data$interface, c(1,2,3,0), c("Minimal", "Minimal+Context", "Full", "Control"))
+data <- mutate(data, controlStart= id %in% seq(1:6))
+data <- mutate(data, MCafterM= id %in% c(1,2,5,7,8,11))
 
 if(is.numeric(data[[measure]])){
   # plot histograms to check normality
@@ -41,7 +47,7 @@ if(is.numeric(data[[measure]])){
 
 
 ## aggregate
-collapsed <- aggregate(as.formula(paste(measure,"~ id +",within)), data, estimator)
+collapsed <- aggregate(as.formula(paste(measure,"~ id +",within,"+",between)), data, estimator)
 util.printBigHeader(paste0("Running Parametric Analysis for ", measure, " on ", within," (within-subject)"));
 
 
@@ -55,7 +61,8 @@ plot(density(collapsed[[measure]]))
 
 
 ## ANOVA
-results <- util.withinSubjectsAnalysis(collapsed, "id", measure, within, "id")
+results <- util.withinSubjectsAnalysis(collapsed, "id", measure, within, "id","none")
+#results <- util.mixedDesignAnalysis(collapsed, "id", measure, between, within, "id")
 
 # boxplot the data to look for outliers in each cell
 outliers <- boxplot(as.formula(paste(measure,"~",within)), collapsed)$out
@@ -67,6 +74,7 @@ if(length(outliers) > 0){
 }
 
 # de-logtransform effect sizes
+writeLines("")
 delog <- function(x) exp(x)-1
 difference <- function(x, y){
   absolute <- delog(x)-delog(y)
@@ -78,3 +86,5 @@ means <- list()
 by(means.df, 1:nrow(means.df), function(row) means[as.character(row$interface)] <<- row$Mean)
 difference(means$Full, means$`Minimal+Context`)
 difference(means$Control, means$`Minimal+Context`)
+
+writeLines(paste((12-length(unique(data$id))), "participants removed"))
